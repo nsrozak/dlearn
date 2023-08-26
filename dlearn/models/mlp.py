@@ -8,11 +8,11 @@ import torch.nn as nn
 
 class MLP(nn.Module):
     def __init__(self, input_size: int, output_size: int, hidden_sizes: list=[], 
-                 probabilities: bool=False):
+                 probabilities: bool=False, p_dropout: float=0):
         # initialize superclass
         super(MLP, self).__init__()
 
-        # initialize valies
+        # initialize linear values
         layer_sizes = [input_size] + hidden_sizes + [output_size]
         self.linear_layers = nn.ModuleList()
         n_layers = len(layer_sizes) - 1
@@ -24,6 +24,10 @@ class MLP(nn.Module):
             # add activation function
             if i < n_layers:
                 self.linear_layers.append(nn.ReLU())
+
+            # add dropout regularization
+            if (p_dropout > 0) and i < n_layers:
+                self.linear_layers.append(nn.Dropout(p=p_dropout))
 
         # add softmax to normalize for probabilities
         if probabilities == True:
