@@ -3,6 +3,7 @@
 # global imports
 import torch
 import torch.nn as nn
+from typing import Tuple
 from dlearn.models.layers.linear import LinearLayers, LinearParams
 
 ### Classes ###
@@ -61,8 +62,15 @@ class RNN(nn.Module):
         linear_params.set_member_variables(input_size=hidden_size)
         self.linear_layers = LinearLayers(linear_params)
                                                                            
-    def forward(self,  X: torch.tensor) -> torch.tensor:
-        X = self.recurrent_layers(X)
+    def forward(self,  X: torch.tensor, h: torch.tensor=None) -> Tuple[torch.tensor]:
+        # get predictions for recurrent layers
+        if h is not None:
+            X, h = self.recurrent_layers(X, h)
+        else:
+            X, h = self.recurrent_layers(X)
+
+        # get predictions for hidden layers   
+        X = X[:, 0, :]
         y = self.linear_layers(X)
-        return y
+        return y, h
     
