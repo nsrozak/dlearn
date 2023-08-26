@@ -4,8 +4,8 @@
 import torch
 import torch.nn as nn
 from typing import Tuple
-from dlearn.models.layers.linear import LinearLayers, LinearParams
-from dlearn.models.layers.conv import ConvLayers, ConvParams, conv_output_size
+from dlearn.layers.linear import LinearLayers, LinearParams
+from dlearn.layers.conv import ConvLayers, ConvParams, conv_output_size
 
 
 ### Classes ###
