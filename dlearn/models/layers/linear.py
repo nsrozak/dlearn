@@ -12,7 +12,7 @@ class LinearParams():
     output_size: int=None
     hidden_sizes: list=[]
     probabilities: bool=False
-    p_dropout: float=0
+    dropout: float=0
 
     def __init__(self, **kwargs):
         # specify allowed member variables
@@ -20,7 +20,7 @@ class LinearParams():
                                  'output_size': int, 
                                  'hidden_sizes': list, 
                                  'probabilities': bool, 
-                                 'p_dropout': float
+                                 'dropout': float
                                  }
 
         # set member vairables
@@ -44,7 +44,7 @@ class LinearLayers(nn.Module):
         output_size = linear_params.output_size 
         hidden_sizes = linear_params.hidden_sizes
         probabilities = linear_params.probabilities
-        p_dropout = linear_params.p_dropout
+        dropout = linear_params.dropout
 
         # initialize linear values
         layer_sizes = [input_size] + hidden_sizes + [output_size]
@@ -60,8 +60,8 @@ class LinearLayers(nn.Module):
                 self.linear_layers.append(nn.ReLU())
 
             # add dropout regularization
-            if (p_dropout > 0) and i < n_layers:
-                self.linear_layers.append(nn.Dropout(p=p_dropout))
+            if (dropout > 0) and i < n_layers:
+                self.linear_layers.append(nn.Dropout(p=dropout))
 
         # add softmax to normalize for probabilities
         if probabilities == True:
