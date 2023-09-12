@@ -4,11 +4,12 @@
 import torch
 import torch.nn as nn
 from typing import Tuple
+from dlearn.utils import Params
 from dlearn.layers.linear import LinearLayers, LinearParams
 
 ### Classes ###
 
-class RecurrentParams():
+class RecurrentParams(Params):
     # set default variables
     input_size: int=None
     hidden_size: int=None
@@ -18,6 +19,9 @@ class RecurrentParams():
     dropout: float=0
 
     def __init__(self, **kwargs):
+        # initialize super class
+        super(RecurrentParams, self).__init__()
+
         # specify allowed member variables
         self.member_variables = {'input_size': int,
                                  'hidden_size': int,
@@ -29,13 +33,6 @@ class RecurrentParams():
         # set member vairables
         self.set_member_variables(**kwargs)
 
-    def set_member_variables(self, **kwargs):
-        # iterate over kwargs
-        for key, value in kwargs.items():
-            # set attr if key is a member variable and value is correct type
-            if (key in self.member_variables) and\
-                (type(value) == self.member_variables[key]):
-                setattr(self, key, value)
 
 class RNN(nn.Module):
     def __init__(self, recurrent_params: RecurrentParams, linear_params: LinearParams):
@@ -43,12 +40,8 @@ class RNN(nn.Module):
         super(RNN, self).__init__()
 
         # get parameters
-        input_size = recurrent_params.input_size
-        hidden_size = recurrent_params.hidden_size
-        num_layers = recurrent_params.num_layers
-        nonlinearity = recurrent_params.nonlinearity
-        batch_first = recurrent_params.batch_first
-        dropout = recurrent_params.dropout
+        batch_first, dropout, input_size, hidden_size, nonlinearity, num_layers =\
+            recurrent_params.get_params()
 
         # create recurrent layers
         self.recurrent_layers = nn.RNN(input_size, hidden_size, 

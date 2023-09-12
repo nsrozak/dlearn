@@ -4,6 +4,7 @@
 import torch
 import torch.nn as nn
 from typing import Tuple
+from dlearn.utils import Params
 
 ### Functions ###
 
@@ -49,7 +50,7 @@ def conv_output_size(input_dims: Tuple[int], output_channels: int,
 
 ### Classes ###
 
-class ConvParams():
+class ConvParams(Params):
     # set default variables
     input_channel: int=None
     channels: list=[]
@@ -61,6 +62,9 @@ class ConvParams():
     is_normalized: bool=True
 
     def __init__(self, **kwargs):
+        # initialize super class
+        super(ConvParams, self).__init__()
+
         # specify allowed member variables
         self.member_variables = {'input_channel': int, 
                                  'channels': list, 
@@ -72,16 +76,9 @@ class ConvParams():
                                  'is_normalized': bool
                                  }
 
-        # set member vairables
+        # set member variables
         self.set_member_variables(**kwargs)
 
-    def set_member_variables(self, **kwargs):
-        # iterate over kwargs
-        for key, value in kwargs.items():
-            # set attr if key is a member variable and value is correct type
-            if (key in self.member_variables) and\
-                (type(value) == self.member_variables[key]):
-                setattr(self, key, value)
 
 class ConvLayers(nn.Module):
     def __init__(self, conv_params: ConvParams):
@@ -89,14 +86,8 @@ class ConvLayers(nn.Module):
         super(ConvLayers, self).__init__()
 
         # get params
-        input_channel = conv_params.input_channel 
-        channels = conv_params.channels
-        kernel_sizes = conv_params.kernel_sizes 
-        strides = conv_params.strides 
-        paddings = conv_params.paddings 
-        dilations = conv_params.dilations 
-        is_convs = conv_params.is_convs 
-        is_normalized = conv_params.is_normalized
+        channels, dilations, input_channel, is_normalized, is_convs, kernel_sizes, paddings, strides =\
+            conv_params.get_params()
 
         # create convolutional layers
         self.conv_layers = nn.ModuleList()

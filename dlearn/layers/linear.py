@@ -3,10 +3,11 @@
 # global imports
 import torch
 import torch.nn as nn
+from dlearn.utils import Params
 
 ### Classes ###
 
-class LinearParams():
+class LinearParams(Params):
     # set default variables
     input_size: int=None
     output_size: int=None
@@ -15,6 +16,9 @@ class LinearParams():
     dropout: float=0
 
     def __init__(self, **kwargs):
+        # initialize super class
+        super(LinearParams, self).__init__()
+
         # specify allowed member variables
         self.member_variables = {'input_size': int, 
                                  'output_size': int, 
@@ -26,25 +30,14 @@ class LinearParams():
         # set member vairables
         self.set_member_variables(**kwargs)
 
-    def set_member_variables(self, **kwargs):
-        # iterate over kwargs
-        for key, value in kwargs.items():
-            # set attr if key is a member variable and value is correct type
-            if (key in self.member_variables) and\
-                (type(value) == self.member_variables[key]):
-                setattr(self, key, value)
-
 class LinearLayers(nn.Module):
     def __init__(self, linear_params: LinearParams):
         # initialize superclass
         super(LinearLayers, self).__init__()
 
         # get parameters
-        input_size = linear_params.input_size
-        output_size = linear_params.output_size 
-        hidden_sizes = linear_params.hidden_sizes
-        probabilities = linear_params.probabilities
-        dropout = linear_params.dropout
+        dropout, hidden_sizes, input_size, output_size, probabilities =\
+            linear_params.get_params()
 
         # initialize linear values
         layer_sizes = [input_size] + hidden_sizes + [output_size]

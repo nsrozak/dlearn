@@ -4,10 +4,11 @@
 import torch
 import torch.nn as nn
 from dlearn.layers.linear import LinearLayers, LinearParams
+from dlearn.utils import Params
 
 ### Classes ###
 
-class EmbeddingParams():
+class EmbeddingParams(Params):
     # set default variables
     vocab_size: int=None
     embedding_dim: int=None
@@ -15,6 +16,9 @@ class EmbeddingParams():
     norm_type: float=2.0
 
     def __init__(self, **kwargs):
+        # initialize superclass
+        super(EmbeddingParams, self).__init__()
+
         # specify allowed member variables
         self.member_variables = {'num_embeddings': int,
                                  'embedding_dim': int,
@@ -25,13 +29,6 @@ class EmbeddingParams():
         # set member vairables
         self.set_member_variables(**kwargs)
 
-    def set_member_variables(self, **kwargs):
-        # iterate over kwargs
-        for key, value in kwargs.items():
-            # set attr if key is a member variable and value is correct type
-            if (key in self.member_variables) and\
-                (type(value) == self.member_variables[key]):
-                setattr(self, key, value)
 
 class EmbeddingNN(nn.Module):
     def __init__(self, input_size: int, embedding_params: EmbeddingParams, 
@@ -40,10 +37,8 @@ class EmbeddingNN(nn.Module):
         super(EmbeddingNN, self).__init__()
 
         # get parameters
-        vocab_size = embedding_params.vocab_size
-        embedding_dim = embedding_params.embedding_dim
-        max_norm = embedding_params.max_norm
-        norm_type = embedding_params.norm_type
+        embedding_dim, max_norm, norm_type, vocab_size =\
+            embedding_params.get_params()
 
         # create embedding layer
         self.embedding_layers = nn.Embedding(vocab_size, embedding_dim, 
