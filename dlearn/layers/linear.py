@@ -41,24 +41,27 @@ class LinearLayers(nn.Module):
 
         # initialize linear values
         layer_sizes = [input_size] + hidden_sizes + [output_size]
-        self.linear_layers = nn.ModuleList()
+        layers = []
         n_layers = len(layer_sizes) - 1
 
         # create linear layers
         for i in range(n_layers):
-            self.linear_layers.append(nn.Linear(layer_sizes[i], layer_sizes[i + 1]))
+            layers.append(nn.Linear(layer_sizes[i], layer_sizes[i + 1]))
 
             # add activation function
             if i < n_layers:
-                self.linear_layers.append(nn.ReLU())
+                layers.append(nn.ReLU())
 
             # add dropout regularization
             if (dropout > 0) and i < n_layers:
-                self.linear_layers.append(nn.Dropout(p=dropout))
+                layers.append(nn.Dropout(p=dropout))
 
         # add softmax to normalize for probabilities
         if probabilities == True:
-            self.linear_layers.append(nn.Softmax())
+            layers.append(nn.Softmax())
+
+        # create neural net object
+        self.linear_layers = nn.Sequential(*layers)
 
     def forward(self, X: torch.tensor) -> torch.tensor:
         y = self.linear_layers(X)

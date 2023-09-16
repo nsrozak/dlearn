@@ -90,7 +90,7 @@ class ConvLayers(nn.Module):
             conv_params.get_params()
 
         # create convolutional layers
-        self.conv_layers = nn.ModuleList()
+        layers = []
 
         for i in range(len(channels)):
             # get arguments
@@ -104,30 +104,32 @@ class ConvLayers(nn.Module):
 
             # add the convolution
             if is_conv == True:
-                self.conv_layers.append(nn.Conv2d(in_channel, out_channel, kernel_size, 
-                                                  stride=stride, 
-                                                  padding=padding, 
-                                                  dilation=dilation, 
-                                                  groups=in_channel
-                                                  )
-                                        )
+                layers.append(nn.Conv2d(in_channel, out_channel, kernel_size, 
+                                        stride=stride, 
+                                        padding=padding, 
+                                        dilation=dilation, 
+                                        groups=in_channel
+                                       )
+                             )
                 
                 # add activation function
-                self.conv_layers.append(nn.ReLU())
+                layers.append(nn.ReLU())
                 
                 # add batch norm regularization
                 if is_normalized == True:
-                    self.conv_layers.append(nn.BatchNorm2d(out_channel))
+                    layers.append(nn.BatchNorm2d(out_channel))
 
             # add pooling   
             else: 
-                self.conv_layers.append(nn.MaxPool2d(kernel_size, 
-                                                     stride=stride, 
-                                                     padding=padding, 
-                                                     dilation=dilation
-                                                     )
-                                       )
-
+                layers.append(nn.MaxPool2d(kernel_size, 
+                                           stride=stride, 
+                                           padding=padding, 
+                                           dilation=dilation
+                                          )
+                             )
+                
+        # create neural net object
+        self.conv_layers = nn.Sequential(*layers)
         
     def forward(self, X: torch.tensor) -> torch.tensor:
         X = self.conv_layers(X)

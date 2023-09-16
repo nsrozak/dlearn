@@ -18,27 +18,45 @@ from dlearn.models.rnn import RNN
 ### Classes ###
 
 class NeuralNet():
-    def __init__(self, model: Union[CNN, EmbeddingNN, MLP, LSTM, RNN], 
-                 optimizer: optim, scheduler: optim.lr_scheduler, 
-                 criterion: nn, save_dir: str, clip: Optional[float]=None, 
-                 device: str='cuda', scheduler_requires_loss: bool=False, 
-                 minimize_loss: bool=True):
+    def __init__(self, model: Union[CNN, EmbeddingNN, MLP, LSTM, RNN], save_dir: str, 
+                 criterion: nn,  minimize_loss: bool=True, 
+                 optimizer_type: str='SGD', optimizer_kwargs: dict={}, 
+                 scheduler_type: str='StepLR', scheduler_kwargs: dict={},
+                 clip: Optional[float]=None, 
+                 device: str='cuda', 
+                 ):
         # set helper member variables
         self.save_dir = save_dir
-        self.scheduler_requires_loss = scheduler_requires_loss
-        self.minimize_loss = minimize_loss
-
         self.device = device
-        self.clip = clip
 
-        # set deep learning member variables
+        # set model member variables
         self.model = model
         self.model.to(self.device)
+        self.clip = clip
 
-        self.optimizer = optimizer
-        self.scheduler = scheduler
+        # set criterion member variables
         self.criterion = criterion
+        self.minimize_loss = minimize_loss
 
+        # create optimizer
+        if optimizer_type == 'SGD':  # momentum, weight_decay, nesterov, maximize
+            self.optimizer = optim.SGD(self.model.parameters(), **optimizer_kwargs)
+        elif optimizer_type == 'Adam':  # lr, betas, weight_decay, maximize
+            self.optimizer = optim.SGD(self.model.parameters, **optimizer_kwargs)
+        else:
+            raise ValueError('Unsupported optimizer_type: ', optimizer_type)
+
+        # create scheduler
+        self.scheduler_requires_loss = False
+        
+        if scheduler_type == 'StepLR':  # step_size, gamma
+            self.scheduler = optim.lr_scheduler.StepLR(self.optimizer, **scheduler_kwargs)
+        elif scheduler_type == 'ReduceLROnPlateau':  # factor, patience, threshold
+            self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(self.optimizer, **scheduler_kwargs)
+            self.scheduler_requires_loss = True
+        else: 
+            raise ValueError('Unsupported scheduler_type: ', scheduler_type)
+        
     def train(self, data_loader: DataLoader):
         # initialize values
         loss = 0
@@ -59,6 +77,10 @@ class NeuralNet():
 
             # backprop
             _loss.backward()
+
+            if self.clip != None:
+                nn.utils.clip_grad(self.model.parameters(), self.clip)
+
             self.optimizer.step()
 
         # return loss
@@ -86,6 +108,23 @@ class NeuralNet():
         # return loss
         loss /= num_obs
         return loss
+    
+    def predict(self, data_loader: DataLoader):
+        # set up
+        predictions = []
+        self.model.eval()
+
+        # iterate over the data
+        for data, _ in data_loader:
+            data = data.to(self.device)
+
+            # get predictions and loss
+            with torch.no_grad():
+                out = self.model(data)
+                predictions.extend(out.tolist())
+
+        # return predictions
+        return predictions
 
     def train_model(self, train_data_loader: DataLoader, val_data_loader: DataLoader, 
                     test_data_loader: DataLoader, num_epochs: int):

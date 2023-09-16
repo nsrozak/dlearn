@@ -15,11 +15,8 @@ class LSTM(nn.Module):
         super(LSTM, self).__init__()
 
         # get parameters
-        input_size = recurrent_params.input_size
-        hidden_size = recurrent_params.hidden_size
-        num_layers = recurrent_params.num_layers
-        batch_first = recurrent_params.batch_first
-        dropout = recurrent_params.dropout
+        batch_first, dropout, input_size, hidden_size, nonlinearity, num_layers =\
+            recurrent_params.get_params()
 
         # create recurrent layers
         self.recurrent_layers = nn.LSTM(input_size, hidden_size, 
