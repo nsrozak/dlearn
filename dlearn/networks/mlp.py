@@ -3,7 +3,8 @@
 # global imports
 import torch
 import torch.nn as nn
-from dlearn.layers.linear import LinearLayers, LinearParams
+from dlearn.params.linear import LinearParams
+from dlearn.layers.linear import LinearLayers
 
 
 ### Classes ###
